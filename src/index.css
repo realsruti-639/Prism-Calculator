@@ -1,0 +1,45 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --prism-rgb: 255 63 203;
+  }
+
+  [data-theme='cyber-amber'] {
+    --prism-rgb: 255 176 32;
+  }
+
+  [data-theme='toxic-green'] {
+    --prism-rgb: 124 255 58;
+  }
+
+  [data-theme='synthwave-purple'] {
+    --prism-rgb: 176 102 255;
+  }
+
+  html {
+    background-color: #05070a;
+  }
+
+  body {
+    @apply bg-ink-950 font-sans text-zinc-100 antialiased;
+  }
+}
+
+@layer components {
+  .glow-text {
+    text-shadow: 0 0 18px rgba(46, 230, 246, 0.55), 0 0 2px rgba(46, 230, 246, 0.7);
+  }
+
+  .grid-backdrop {
+    background-image:
+      linear-gradient(rgba(46, 230, 246, 0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(46, 230, 246, 0.06) 1px, transparent 1px),
+      radial-gradient(ellipse at 50% 0%, rgba(46, 230, 246, 0.12), transparent 60%);
+    background-size: 48px 48px, 48px 48px, 100% 100%;
+    -webkit-mask-image: linear-gradient(to bottom, black 20%, transparent 90%);
+    mask-image: linear-gradient(to bottom, black 20%, transparent 90%);
+  }
+}
