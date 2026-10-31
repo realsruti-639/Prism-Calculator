@@ -15,7 +15,7 @@ type CalculationRow = {
   created_at: string;
 };
 
-const HISTORY_LIMIT = 100;
+export const HISTORY_LIMIT = 100;
 const COLUMNS = 'id, expression, result, created_at';
 
 function isCalculationRow(value: unknown): value is CalculationRow {
@@ -33,10 +33,11 @@ function toEntry(row: CalculationRow): HistoryEntry {
   return { id: row.id, expression: row.expression, result: row.result, createdAt: row.created_at };
 }
 
-export async function fetchCalculations(): Promise<HistoryEntry[]> {
+export async function fetchCalculations(userId: string): Promise<HistoryEntry[]> {
   const { data, error } = await supabase
     .from('calculations')
     .select(COLUMNS)
+    .eq('user_id', userId)
     .order('created_at', { ascending: false })
     .limit(HISTORY_LIMIT);
 
@@ -45,10 +46,10 @@ export async function fetchCalculations(): Promise<HistoryEntry[]> {
   return data.map(toEntry);
 }
 
-export async function insertCalculation(calculation: CompletedCalculation): Promise<HistoryEntry> {
+export async function insertCalculation(userId: string, calculation: CompletedCalculation): Promise<HistoryEntry> {
   const { data, error } = await supabase
     .from('calculations')
-    .insert({ expression: calculation.expression, result: calculation.result })
+    .insert({ user_id: userId, expression: calculation.expression, result: calculation.result })
     .select(COLUMNS)
     .maybeSingle();
 
@@ -57,12 +58,12 @@ export async function insertCalculation(calculation: CompletedCalculation): Prom
   return toEntry(data);
 }
 
-export async function deleteCalculation(id: string): Promise<void> {
-  const { error } = await supabase.from('calculations').delete().eq('id', id);
+export async function deleteCalculation(userId: string, id: string): Promise<void> {
+  const { error } = await supabase.from('calculations').delete().eq('user_id', userId).eq('id', id);
   if (error) throw new Error(error.message);
 }
 
-export async function clearCalculations(): Promise<void> {
-  const { error } = await supabase.from('calculations').delete().not('id', 'is', null);
+export async function clearCalculations(userId: string): Promise<void> {
+  const { error } = await supabase.from('calculations').delete().eq('user_id', userId);
   if (error) throw new Error(error.message);
 }

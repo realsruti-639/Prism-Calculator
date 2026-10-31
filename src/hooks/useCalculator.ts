@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useReducer } from 'react';
+import { useEffect, useMemo, useReducer, useRef } from 'react';
 import {
   calculatorReducer,
   currentValue,
@@ -20,10 +20,15 @@ function previewValue(state: CalculatorState): number | null {
 export function useCalculator(onCompleted: (calculation: CompletedCalculation) => void) {
   const [state, dispatch] = useReducer(calculatorReducer, initialCalculatorState);
   const preview = useMemo(() => previewValue(state), [state]);
+  const onCompletedRef = useRef(onCompleted);
 
   useEffect(() => {
-    if (state.completed) onCompleted(state.completed);
-  }, [state.completed, onCompleted]);
+    onCompletedRef.current = onCompleted;
+  }, [onCompleted]);
+
+  useEffect(() => {
+    if (state.completed) onCompletedRef.current(state.completed);
+  }, [state.completed]);
 
   return { state, dispatch, preview };
 }
