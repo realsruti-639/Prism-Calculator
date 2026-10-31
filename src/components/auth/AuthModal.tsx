@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { X } from 'lucide-react';
 import { signInWithEmail, signUpWithEmail } from '@/lib/auth';
 
-type AuthDialogProps = {
+type AuthModalProps = {
   onClose: () => void;
 };
 
@@ -11,7 +11,7 @@ type AuthMode = 'signin' | 'signup';
 const FIELD_CLASSES =
   'w-full rounded-xl border border-neon-cyan/30 bg-ink-950 px-4 py-3 text-zinc-100 transition placeholder:text-zinc-600 focus:border-prism focus:outline-none focus:ring-2 focus:ring-prism/30';
 
-export function AuthDialog({ onClose }: AuthDialogProps) {
+export function AuthModal({ onClose }: AuthModalProps) {
   const [mode, setMode] = useState<AuthMode>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -33,30 +33,43 @@ export function AuthDialog({ onClose }: AuthDialogProps) {
     onClose();
   };
 
+  const switchMode = () => {
+    setMode(isSignUp ? 'signin' : 'signup');
+    setMessage(null);
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink-950/75 p-4 backdrop-blur-sm" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-zinc-950/80 p-4 backdrop-blur-md"
+      onClick={onClose}
+    >
       <div
         role="dialog"
         aria-modal="true"
-        aria-labelledby="auth-title"
+        aria-labelledby="auth-modal-title"
         onClick={(event) => event.stopPropagation()}
-        className="w-full max-w-md rounded-3xl border border-prism/40 bg-ink-900 p-6 shadow-[0_0_60px_-20px_rgb(var(--prism-rgb)/0.45)] sm:p-7"
+        className="w-full max-w-md rounded-3xl border border-zinc-800 bg-zinc-950/80 p-6 shadow-2xl backdrop-blur-md sm:p-8"
       >
-        <div className="mb-6 flex items-center justify-between">
-          <h2 id="auth-title" className="font-mono text-sm tracking-widest text-prism glow-text">
-            {isSignUp ? 'CREATE ACCOUNT' : 'SIGN IN'}
-          </h2>
+        <div className="mb-8 flex items-start justify-between gap-4">
+          <div className="flex flex-col gap-2">
+            <h2 id="auth-modal-title" className="font-mono text-sm tracking-widest text-prism glow-text">
+              {isSignUp ? 'CREATE ACCOUNT' : 'SIGN IN'}
+            </h2>
+            <p className="text-sm text-zinc-400">
+              {isSignUp ? 'Keep your calculations and Pro access with you.' : 'Welcome back to Prism.'}
+            </p>
+          </div>
           <button
             type="button"
             aria-label="Close account form"
             onClick={onClose}
-            className="flex h-9 w-9 items-center justify-center rounded-lg border border-prism/70 text-neon-cyan transition hover:bg-prism/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neon-cyan"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-zinc-700 text-zinc-300 transition hover:border-zinc-500 hover:text-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neon-cyan"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+        <form key={mode} onSubmit={handleSubmit} className="animate-result-in flex flex-col gap-5">
           <label className="flex flex-col gap-2">
             <span className="text-xs uppercase tracking-widest text-neon-cyan/70">Email</span>
             <input
@@ -93,9 +106,9 @@ export function AuthDialog({ onClose }: AuthDialogProps) {
           <button
             type="submit"
             disabled={pending}
-            className="rounded-full border border-prism/70 bg-prism/10 px-6 py-2.5 text-sm font-semibold tracking-wide text-prism shadow-[0_0_18px_-6px_rgb(var(--prism-rgb)/0.9)] transition hover:bg-prism/20 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neon-cyan"
+            className="rounded-full border border-prism/70 bg-prism/10 px-6 py-3 text-sm font-semibold tracking-wide text-prism shadow-[0_0_18px_-6px_rgb(var(--prism-rgb)/0.9)] transition hover:bg-prism/20 hover:shadow-[0_0_28px_-4px_rgb(var(--prism-rgb)/1)] disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neon-cyan"
           >
-            {pending ? 'Please wait...' : isSignUp ? 'Create account' : 'Sign in'}
+            {pending ? 'Please wait...' : isSignUp ? 'Create Account' : 'Sign In'}
           </button>
         </form>
 
@@ -103,13 +116,10 @@ export function AuthDialog({ onClose }: AuthDialogProps) {
           {isSignUp ? 'Already have an account?' : 'New to Prism?'}{' '}
           <button
             type="button"
-            onClick={() => {
-              setMode(isSignUp ? 'signin' : 'signup');
-              setMessage(null);
-            }}
+            onClick={switchMode}
             className="font-medium text-neon-cyan underline-offset-4 transition hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neon-cyan"
           >
-            {isSignUp ? 'Sign in' : 'Create an account'}
+            {isSignUp ? 'Sign In' : 'Create Account'}
           </button>
         </p>
       </div>

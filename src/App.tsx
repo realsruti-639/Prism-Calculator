@@ -9,29 +9,30 @@ import { Keypad } from '@/components/calculator/Keypad';
 import { GraphPanel } from '@/components/graph/GraphPanel';
 import { ModeTabs, type ViewMode } from '@/components/ModeTabs';
 import { UnitConverterDialog } from '@/components/converter/UnitConverterDialog';
-import { AuthDialog } from '@/components/auth/AuthDialog';
+import { AuthModal } from '@/components/auth/AuthModal';
 import { PaywallProvider } from '@/components/ui/PaywallProvider';
-import { useAuth } from '@/hooks/useAuth';
 import { useCalculationHistory } from '@/hooks/useCalculationHistory';
 import { useCalculator, useCalculatorKeyboard } from '@/hooks/useCalculator';
-import { usePaywall } from '@/hooks/usePaywall';
 import { usePreferences } from '@/hooks/usePreferences';
-import { signOutAccount } from '@/lib/auth';
+import { usePrismAuth, type PrismAuth } from '@/hooks/usePrismAuth';
 import type { CalculusKind } from '@/lib/calculus';
 import { PreferencesDialog } from '@/components/preferences/PreferencesDialog';
 
 export default function App() {
+  const auth = usePrismAuth();
   return (
-    <PaywallProvider>
-      <CalculatorApp />
+    <PaywallProvider isPro={auth.isPro}>
+      <CalculatorApp auth={auth} />
     </PaywallProvider>
   );
 }
 
-function CalculatorApp() {
-  const { user } = useAuth();
-  const { isPro } = usePaywall();
-  const historyUserId = user && isPro ? user.id : null;
+type CalculatorAppProps = {
+  auth: PrismAuth;
+};
+
+function CalculatorApp({ auth }: CalculatorAppProps) {
+  const historyUserId = auth.user && auth.isPro ? auth.user.id : null;
   const history = useCalculationHistory(historyUserId);
   const { state, dispatch, preview } = useCalculator(history.addEntry);
   const { preferences, updatePreferences } = usePreferences();
@@ -51,9 +52,8 @@ function CalculatorApp() {
       <div aria-hidden="true" className="grid-backdrop pointer-events-none fixed inset-0" />
       <div className="relative">
         <AppHeader
-          accountEmail={user?.email ?? null}
+          auth={auth}
           onOpenAuth={() => setAuthOpen(true)}
-          onSignOut={() => void signOutAccount()}
           onOpenPreferences={() => setPreferencesOpen(true)}
         />
         <main className="mx-auto w-full max-w-6xl px-4 pb-12 sm:px-6 lg:px-8">
@@ -116,7 +116,7 @@ function CalculatorApp() {
           onClose={() => setPreferencesOpen(false)}
         />
       )}
-      {authOpen && <AuthDialog onClose={() => setAuthOpen(false)} />}
+      {authOpen && <AuthModal onClose={() => setAuthOpen(false)} />}
       {converterOpen && <UnitConverterDialog onClose={() => setConverterOpen(false)} />}
       {matrixOpen && (
         <MatrixDialog
