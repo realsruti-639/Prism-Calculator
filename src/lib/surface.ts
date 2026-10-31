@@ -1,16 +1,17 @@
 import { evaluateExpression } from '@/lib/mathEngine';
 
 export const SURFACE_RANGE = 5;
-export const SURFACE_RESOLUTION = 24;
+export const SURFACE_MIN_RESOLUTION = 24;
+export const SURFACE_MAX_RESOLUTION = 40;
 
-export function sampleSurface(equation: string): number[][] {
+export function sampleSurface(equation: string, resolution: number): number[][] {
   const expression = equation.replace(/^\s*z\s*=\s*/i, '').trim();
   if (expression === '') throw new Error('Enter an equation using x and y');
 
-  const steps = SURFACE_RESOLUTION - 1;
+  const steps = resolution - 1;
   let firstError: string | null = null;
-  const values = Array.from({ length: SURFACE_RESOLUTION }, (_, row) =>
-    Array.from({ length: SURFACE_RESOLUTION }, (_, col) => {
+  const values = Array.from({ length: resolution }, (_, row) =>
+    Array.from({ length: resolution }, (_, col) => {
       const x = -SURFACE_RANGE + (2 * SURFACE_RANGE * col) / steps;
       const y = -SURFACE_RANGE + (2 * SURFACE_RANGE * row) / steps;
       try {

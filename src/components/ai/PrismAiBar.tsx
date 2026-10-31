@@ -1,6 +1,9 @@
 import { useState, type FormEvent } from 'react';
 import { Sparkles } from 'lucide-react';
 import { MatrixResultPanel } from '@/components/matrix/MatrixResultPanel';
+import { useAiUsage } from '@/hooks/useAiUsage';
+import { usePaywall } from '@/hooks/usePaywall';
+import { AI_FREE_DAILY_LIMIT } from '@/lib/aiUsage';
 import type { CalculusResult } from '@/lib/calculus';
 import { formatNumber } from '@/lib/mathEngine';
 import { interpretCommand, type PrismIntent } from '@/lib/prismAi';
@@ -44,9 +47,17 @@ function IntentStatus({ intent, onShowResult }: { intent: PrismIntent; onShowRes
 export function PrismAiBar({ onLoadExpression, onShowResult }: PrismAiBarProps) {
   const [text, setText] = useState('');
   const [intent, setIntent] = useState<PrismIntent | null>(null);
+  const { isPro, openPaywall } = usePaywall();
+  const aiUsage = useAiUsage();
+  const remainingRuns = Math.max(AI_FREE_DAILY_LIMIT - aiUsage.count, 0);
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (!isPro && remainingRuns === 0) {
+      openPaywall('Unlimited Prism-AI');
+      return;
+    }
+    aiUsage.recordRun();
     const next = interpretCommand(text);
     setIntent(next);
     if (next.kind === 'expression') onLoadExpression(next.expression);
@@ -59,6 +70,11 @@ export function PrismAiBar({ onLoadExpression, onShowResult }: PrismAiBarProps) 
         <Sparkles className="h-4 w-4 text-prism" />
         <span className="font-mono text-xs uppercase tracking-widest text-prism">Prism-AI</span>
         <span className="text-xs text-zinc-500">Describe a calculation in plain words</span>
+        {!isPro && (
+          <span className="ml-auto whitespace-nowrap font-mono text-xs text-zinc-400">
+            {remainingRuns} of {AI_FREE_DAILY_LIMIT} free runs left today
+          </span>
+        )}
       </div>
 
       <form onSubmit={handleSubmit} className="flex gap-2">
